@@ -63,9 +63,9 @@ export type CustomRole = string;
 /** Union of all possible role types in the system */
 export type AllRoleTypes = GlobalRole | ProjectRole | WorkflowSharingRole | CredentialSharingRole;
 
-type RoleObject<T extends AllRoleTypes> = {
-	role: T;
-	name: string;
+export type RoleObject<T extends AllRoleTypes> = {
+	slug: T | string;
+	displayName: string;
 	description?: string | null;
 	scopes: Scope[];
 	licensed: boolean;

@@ -10,6 +10,8 @@ import type {
 import { createMember } from './shared/db/users';
 import type { SuperAgentTest } from './shared/types';
 import * as utils from './shared/utils/';
+import { GLOBAL_ADMIN_ROLE, GLOBAL_MEMBER_ROLE, GLOBAL_OWNER_ROLE } from '@n8n/db';
+import { RoleDTO } from '@n8n/api-types';
 
 const testServer = utils.setupTestServer({
 	endpointGroups: ['role'],
@@ -18,59 +20,35 @@ const testServer = utils.setupTestServer({
 let memberAgent: SuperAgentTest;
 
 const expectedCategories = ['global', 'project', 'credential', 'workflow'] as const;
-let expectedGlobalRoles: Array<{
-	name: string;
-	role: GlobalRole;
-	scopes: Scope[];
-	licensed: boolean;
-	description: string;
-}>;
-let expectedProjectRoles: Array<{
-	name: string;
-	role: ProjectRole;
-	scopes: Scope[];
-	licensed: boolean;
-	description: string;
-}>;
-let expectedCredentialRoles: Array<{
-	name: string;
-	role: CredentialSharingRole;
-	scopes: Scope[];
-	description: string;
-	licensed: boolean;
-}>;
-let expectedWorkflowRoles: Array<{
-	name: string;
-	role: WorkflowSharingRole;
-	scopes: Scope[];
-	licensed: boolean;
-	description: string;
-}>;
+let expectedGlobalRoles: Array<RoleDTO>;
+let expectedProjectRoles: Array<RoleDTO>;
+let expectedCredentialRoles: Array<RoleDTO>;
+let expectedWorkflowRoles: Array<RoleDTO>;
 
 beforeAll(async () => {
 	memberAgent = testServer.authAgentFor(await createMember());
 
 	expectedGlobalRoles = [
 		{
-			name: 'Owner',
-			role: 'global:owner',
-			scopes: getRoleScopes('global:owner'),
+			...GLOBAL_OWNER_ROLE,
+			scopes: GLOBAL_OWNER_ROLE.scopes.map((s) => s.slug),
+			name: GLOBAL_OWNER_ROLE.displayName,
+			role: GLOBAL_OWNER_ROLE.slug,
 			licensed: true,
-			description: 'Owner',
 		},
 		{
-			name: 'Admin',
-			role: 'global:admin',
-			scopes: getRoleScopes('global:admin'),
+			...GLOBAL_ADMIN_ROLE,
+			scopes: GLOBAL_ADMIN_ROLE.scopes.map((s) => s.slug),
+			name: GLOBAL_ADMIN_ROLE.displayName,
+			role: GLOBAL_ADMIN_ROLE.slug,
 			licensed: false,
-			description: 'Admin',
 		},
 		{
-			name: 'Member',
-			role: 'global:member',
-			scopes: getRoleScopes('global:member'),
+			...GLOBAL_MEMBER_ROLE,
+			scopes: GLOBAL_MEMBER_ROLE.scopes.map((s) => s.slug),
+			name: GLOBAL_MEMBER_ROLE.displayName,
+			role: GLOBAL_MEMBER_ROLE.slug,
 			licensed: true,
-			description: 'Member',
 		},
 	];
 	expectedProjectRoles = [
@@ -148,7 +126,7 @@ describe('GET /roles/', () => {
 
 		expect(resp.status).toBe(200);
 		for (const role of expectedGlobalRoles) {
-			expect(resp.body.data.global).toContainEqual(role);
+			expect(resp.body.data.global).toContain(role);
 		}
 	});
 

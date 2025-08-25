@@ -29,8 +29,8 @@ const ROLE_NAMES: Record<AllRoleTypes, string> = {
 
 const mapToRoleObject = <T extends keyof typeof ROLE_NAMES>(roles: Record<T, Scope[]>) =>
 	(Object.keys(roles) as T[]).map((role) => ({
-		role,
-		name: ROLE_NAMES[role],
+		slug: role,
+		displayName: ROLE_NAMES[role],
 		scopes: getRoleScopes(role),
 		description: ROLE_NAMES[role],
 		licensed: false,
@@ -41,4 +41,8 @@ export const ALL_ROLES: AllRolesMap = {
 	project: mapToRoleObject(PROJECT_SCOPE_MAP),
 	credential: mapToRoleObject(CREDENTIALS_SHARING_SCOPE_MAP),
 	workflow: mapToRoleObject(WORKFLOW_SHARING_SCOPE_MAP),
+};
+
+export const isBuiltInRole = (role: string): role is AllRoleTypes => {
+	return role in ROLE_NAMES;
 };
