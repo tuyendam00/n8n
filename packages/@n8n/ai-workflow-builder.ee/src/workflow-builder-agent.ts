@@ -314,6 +314,9 @@ export class WorkflowBuilderAgent {
 					connections: {},
 					name: '',
 				},
+				workflowPlan: null,
+				planStatus: null,
+				planFeedback: null,
 			};
 
 			return stateUpdate;
