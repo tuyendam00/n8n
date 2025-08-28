@@ -38,6 +38,9 @@ export class RoleRepository extends Repository<Role> {
 		if (!role) {
 			throw new Error('Role not found');
 		}
+		if (role.systemRole) {
+			throw new Error('Cannot update system roles');
+		}
 		Object.assign(role, newData);
 		return await entityManager.save<Role>(role);
 	}

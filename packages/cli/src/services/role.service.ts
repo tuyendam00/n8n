@@ -12,7 +12,7 @@ import {
 	ScopeRepository,
 } from '@n8n/db';
 import { Service } from '@n8n/di';
-import type { CustomRole, ProjectRole, Scope } from '@n8n/permissions';
+import type { CustomRole, ProjectRole, Scope, Role as RoleDTO } from '@n8n/permissions';
 import {
 	combineScopes,
 	getAuthPrincipalScopes,
@@ -22,7 +22,7 @@ import {
 import { UnexpectedError } from 'n8n-workflow';
 
 import { License } from '@/license';
-import { CreateRoleDto, RoleDTO, UpdateRoleDto } from '@n8n/api-types';
+import { CreateRoleDto, UpdateRoleDto } from '@n8n/api-types';
 import { NotFoundError } from '@/errors/response-errors/not-found.error';
 import { BadRequestError } from '@/errors/response-errors/bad-request.error';
 
@@ -37,8 +37,6 @@ export class RoleService {
 	private dbRoleToRoleDTO(role: Role): RoleDTO {
 		return {
 			...role,
-			role: role.slug, // backwards compatibility for the UI
-			name: role.displayName, // backwards compatibility for the UI
 			scopes: role.scopes.map((s) => s.slug),
 			licensed: this.isRoleLicensed(role.slug),
 		};
@@ -88,14 +86,6 @@ export class RoleService {
 	}
 
 	async updateCustomRole(slug: string, newData: UpdateRoleDto) {
-		const role = await this.roleRepository.findBySlug(slug);
-		if (!role) {
-			throw new NotFoundError('Role not found');
-		}
-		if (role.systemRole) {
-			throw new BadRequestError('Cannot update system roles');
-		}
-
 		const { displayName, description, scopes: scopeSlugs } = newData;
 
 		const updatedRole = await this.roleRepository.updateRole(slug, {

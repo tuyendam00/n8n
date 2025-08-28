@@ -1,4 +1,4 @@
-import { CreateRoleDto, RoleDTO, UpdateRoleDto } from '@n8n/api-types';
+import { CreateRoleDto, UpdateRoleDto } from '@n8n/api-types';
 import {
 	Body,
 	Delete,
@@ -9,6 +9,7 @@ import {
 	Post,
 	RestController,
 } from '@n8n/decorators';
+import { Role as RoleDTO } from '@n8n/permissions';
 
 import { RoleService } from '@/services/role.service';
 

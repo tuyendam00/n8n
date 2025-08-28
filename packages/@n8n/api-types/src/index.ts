@@ -23,11 +23,6 @@ export type {
 } from './schemas/project.schema';
 
 export {
-	type RoleDTO,
-	roleDtoSchema,
-} from './schemas/roles.schema';
-
-export {
 	type SourceControlledFile,
 	SOURCE_CONTROL_FILE_LOCATION,
 	SOURCE_CONTROL_FILE_STATUS,
