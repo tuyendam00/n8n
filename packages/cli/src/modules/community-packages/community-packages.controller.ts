@@ -167,14 +167,14 @@ export class CommunityPackagesController {
 		try {
 			const communityNodes = await this.communityNodeTypesService.getCommunityNodeTypes();
 
-			installedCommunityNodes = communityNodes.reduce(
+			installedCommunityNodes = communityNodes.reduce<Record<string, CommunityNodeType>>(
 				(acc, node) => {
 					if (node.isInstalled) {
 						acc[node.packageName] = node;
 					}
 					return acc;
 				},
-				{} as Record<string, CommunityNodeType>,
+				{},
 			);
 		} catch (error) {
 			const message = [

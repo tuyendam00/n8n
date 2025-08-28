@@ -155,5 +155,11 @@ describe('CommunityPackagesController', () => {
 				{ [communityNodeType.packageName!]: communityNodeType },
 			);
 		});
+		it('should throw formatted error if community nodes fetch fails', async () => {
+			communityNodeTypesService.getCommunityNodeTypes.mockRejectedValue(new Error('test'));
+			await expect(controller.getInstalledPackages()).rejects.toThrow(
+				'Error fetching community nodes:test',
+			);
+		});
 	});
 });

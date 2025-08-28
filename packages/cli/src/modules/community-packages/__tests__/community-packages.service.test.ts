@@ -272,6 +272,47 @@ describe('CommunityPackagesService', () => {
 			expect(crossedPkgA.updateAvailable).toBeUndefined();
 			expect(crossedPkgB.updateAvailable).toBe('0.3.0');
 		});
+
+		test('should not fill updateAvailable if the version is lower', () => {
+			const [pkgA, pkgB] = mockPackagePair();
+			pkgA.installedVersion = '0.2.0';
+			pkgB.installedVersion = '0.2.0';
+
+			const updates: Record<string, CommunityNodeType> = {
+				[pkgA.packageName]: {
+					name: pkgA.packageName,
+					packageName: pkgA.packageName,
+					...defaultCommunityNodeTypeProps,
+					npmVersion: '0.1.0',
+					isInstalled: true,
+					nodeVersions: [
+						{
+							npmVersion: '0.1.0',
+							checksum: '1234567890',
+						},
+					],
+				},
+				[pkgB.packageName]: {
+					...defaultCommunityNodeTypeProps,
+					name: pkgB.packageName,
+					packageName: pkgB.packageName,
+					npmVersion: '0.2.0',
+					isInstalled: true,
+					nodeVersions: [
+						{
+							npmVersion: '0.2.0',
+							checksum: '1234567890',
+						},
+					],
+				},
+			};
+
+			const [crossedPkgA, crossedPkgB]: PublicInstalledPackage[] =
+				communityPackagesService.matchPackagesWithUpdates([pkgA, pkgB], updates);
+
+			expect(crossedPkgA.updateAvailable).toBeUndefined();
+			expect(crossedPkgB.updateAvailable).toBeUndefined();
+		});
 	});
 
 	describe('matchMissingPackages()', () => {

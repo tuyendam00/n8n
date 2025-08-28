@@ -11,6 +11,7 @@ import { exec } from 'node:child_process';
 import { access, constants, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
+import semver from 'semver';
 
 import {
 	NODE_PACKAGE_PREFIX,
@@ -201,7 +202,7 @@ export class CommunityPackagesService {
 
 			const update = updates[cur.packageName];
 
-			if (update && update.npmVersion !== publicPackage.installedVersion) {
+			if (update && semver.gt(update.npmVersion, publicPackage.installedVersion)) {
 				publicPackage.updateAvailable = update.npmVersion;
 			}
 
