@@ -211,6 +211,13 @@ watch(
 	},
 	{ immediate: true, deep: true },
 );
+
+// Expose focusInput method to parent components
+defineExpose({
+	focusInput: () => {
+		chatInput.value?.focus();
+	},
+});
 </script>
 
 <template>
