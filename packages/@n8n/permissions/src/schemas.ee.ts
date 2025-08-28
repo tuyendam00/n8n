@@ -29,6 +29,10 @@ export const workflowSharingRoleSchema = z.enum(['workflow:owner', 'workflow:edi
 
 const ALL_SCOPES_LOOKUP_SET = new Set(ALL_SCOPES as string[]);
 
+export const scopeSchema = z.string().refine((val) => ALL_SCOPES_LOOKUP_SET.has(val), {
+	message: 'Invalid scope',
+});
+
 export const roleSchema = z.object({
 	slug: z.string().min(1),
 	displayName: z.string().min(1),
@@ -36,7 +40,7 @@ export const roleSchema = z.object({
 	systemRole: z.boolean(),
 	roleType: z.enum(['global', 'project', 'workflow', 'credential']),
 	licensed: z.boolean(),
-	scopes: z.array(z.string().refine((scope) => ALL_SCOPES_LOOKUP_SET.has(scope), 'Invalid scope')),
+	scopes: z.array(scopeSchema),
 });
 
 export type Role = z.infer<typeof roleSchema>;
