@@ -117,16 +117,6 @@ describe('GET /community-packages', () => {
 		expect(communityPackagesService.executeNpmCommand).not.toHaveBeenCalled();
 	});
 
-	test('should check for updates if packages installed', async () => {
-		communityPackagesService.getAllInstalledPackages.mockResolvedValue([mockPackage()]);
-
-		await authAgent.get('/community-packages').expect(200);
-
-		const args = ['npm outdated --json', { doNotHandleError: true }];
-
-		expect(communityPackagesService.executeNpmCommand).toHaveBeenCalledWith(...args);
-	});
-
 	test('should report package updates if available', async () => {
 		const pkg = mockPackage();
 		communityPackagesService.getAllInstalledPackages.mockResolvedValue([pkg]);

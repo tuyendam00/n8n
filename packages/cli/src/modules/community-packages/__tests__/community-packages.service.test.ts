@@ -1,5 +1,6 @@
+import type { CommunityNodeType } from '@n8n/api-types';
 import type { Logger } from '@n8n/backend-common';
-import { randomName, mockInstance } from '@n8n/backend-test-utils';
+import { mockInstance, randomName } from '@n8n/backend-test-utils';
 import { LICENSE_FEATURES } from '@n8n/constants';
 import axios from 'axios';
 import { mocked } from 'jest-mock';
@@ -7,8 +8,8 @@ import { mock } from 'jest-mock-extended';
 import type { InstanceSettings, PackageDirectoryLoader } from 'n8n-core';
 import type { PublicInstalledPackage } from 'n8n-workflow';
 import { exec } from 'node:child_process';
-import { mkdir, readFile, writeFile, rm, access, constants } from 'node:fs/promises';
-import { join } from 'node:path';
+import { access, constants, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import path, { join } from 'node:path';
 
 import {
 	NODE_PACKAGE_PREFIX,
@@ -43,6 +44,20 @@ const execMock = ((...args) => {
 	cb(null, 'Done', '');
 }) as typeof exec;
 
+const defaultCommunityNodeTypeProps = {
+	authorGithubUrl: 'https://github.com/n8n-io/n8n',
+	authorName: 'n8n',
+	checksum: '1234567890',
+	description: 'A test package',
+	displayName: 'Test Package',
+	numberOfStars: 100,
+	numberOfDownloads: 1000,
+	createdAt: '2021-01-01',
+	updatedAt: '2021-01-01',
+	isOfficialNode: true,
+	nodeDescription: {} as any,
+};
+
 describe('CommunityPackagesService', () => {
 	const license = mock<License>();
 	const config = mock<CommunityPackagesConfig>({
@@ -54,7 +69,7 @@ describe('CommunityPackagesService', () => {
 	const installedNodesRepository = mockInstance(InstalledNodesRepository);
 	const installedPackageRepository = mockInstance(InstalledPackagesRepository);
 
-	const nodesDownloadDir = '/tmp/n8n-jest-global-downloads';
+	const nodesDownloadDir = path.join('tmp', 'n8n-jest-global-downloads');
 	const instanceSettings = mock<InstanceSettings>({ nodesDownloadDir });
 
 	const logger = mock<Logger>();
@@ -196,18 +211,32 @@ describe('CommunityPackagesService', () => {
 		test('should correctly match update versions for packages', () => {
 			const [pkgA, pkgB] = mockPackagePair();
 
-			const updates: CommunityPackages.AvailableUpdates = {
+			const updates: Record<string, CommunityNodeType> = {
 				[pkgA.packageName]: {
-					current: pkgA.installedVersion,
-					wanted: pkgA.installedVersion,
-					latest: '0.2.0',
-					location: pkgA.packageName,
+					name: pkgA.packageName,
+					packageName: pkgA.packageName,
+					...defaultCommunityNodeTypeProps,
+					npmVersion: '0.2.0',
+					isInstalled: true,
+					nodeVersions: [
+						{
+							npmVersion: '0.2.0',
+							checksum: '1234567890',
+						},
+					],
 				},
 				[pkgB.packageName]: {
-					current: pkgA.installedVersion,
-					wanted: pkgA.installedVersion,
-					latest: '0.3.0',
-					location: pkgA.packageName,
+					...defaultCommunityNodeTypeProps,
+					name: pkgB.packageName,
+					packageName: pkgB.packageName,
+					npmVersion: '0.3.0',
+					isInstalled: true,
+					nodeVersions: [
+						{
+							npmVersion: '0.3.0',
+							checksum: '1234567890',
+						},
+					],
 				},
 			};
 
@@ -221,12 +250,19 @@ describe('CommunityPackagesService', () => {
 		test('should correctly match update versions for single package', () => {
 			const [pkgA, pkgB] = mockPackagePair();
 
-			const updates: CommunityPackages.AvailableUpdates = {
+			const updates: Record<string, CommunityNodeType> = {
 				[pkgB.packageName]: {
-					current: pkgA.installedVersion,
-					wanted: pkgA.installedVersion,
-					latest: '0.3.0',
-					location: pkgA.packageName,
+					...defaultCommunityNodeTypeProps,
+					name: pkgB.packageName,
+					packageName: pkgB.packageName,
+					npmVersion: '0.3.0',
+					isInstalled: true,
+					nodeVersions: [
+						{
+							npmVersion: '0.3.0',
+							checksum: '1234567890',
+						},
+					],
 				},
 			};
 
@@ -441,7 +477,10 @@ describe('CommunityPackagesService', () => {
 			// ASSERT:
 			expect(rm).toHaveBeenCalledTimes(2);
 			expect(rm).toHaveBeenNthCalledWith(1, testBlockPackageDir, { recursive: true, force: true });
-			expect(rm).toHaveBeenNthCalledWith(2, `${nodesDownloadDir}/n8n-nodes-test-latest.tgz`);
+			expect(rm).toHaveBeenNthCalledWith(
+				2,
+				path.join(nodesDownloadDir, 'n8n-nodes-test-latest.tgz'),
+			);
 
 			expect(exec).toHaveBeenCalledTimes(3);
 			expect(exec).toHaveBeenNthCalledWith(
@@ -672,7 +711,7 @@ describe('CommunityPackagesService', () => {
 			await communityPackagesService.updatePackageJsonDependency('test-package', '1.0.0');
 
 			expect(writeFile).toHaveBeenCalledWith(
-				`${nodesDownloadDir}/package.json`,
+				path.join(nodesDownloadDir, 'package.json'),
 				JSON.stringify({ dependencies: { 'test-package': '1.0.0' } }, null, 2),
 				'utf-8',
 			);
@@ -682,7 +721,7 @@ describe('CommunityPackagesService', () => {
 			await communityPackagesService.updatePackageJsonDependency('test-package', '1.0.0');
 
 			expect(writeFile).toHaveBeenCalledWith(
-				`${nodesDownloadDir}/package.json`,
+				path.join(nodesDownloadDir, 'package.json'),
 				JSON.stringify({ dependencies: { 'test-package': '1.0.0' } }, null, 2),
 				'utf-8',
 			);

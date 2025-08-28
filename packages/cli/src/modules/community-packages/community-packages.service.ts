@@ -1,3 +1,4 @@
+import { CommunityNodeType } from '@n8n/api-types';
 import { Logger } from '@n8n/backend-common';
 import { LICENSE_FEATURES } from '@n8n/constants';
 import { OnPubSubEvent } from '@n8n/decorators';
@@ -191,7 +192,7 @@ export class CommunityPackagesService {
 
 	matchPackagesWithUpdates(
 		packages: InstalledPackages[],
-		updates?: CommunityPackages.AvailableUpdates,
+		updates?: Record<string, CommunityNodeType>,
 	) {
 		if (!updates) return packages;
 
@@ -200,7 +201,9 @@ export class CommunityPackagesService {
 
 			const update = updates[cur.packageName];
 
-			if (update) publicPackage.updateAvailable = update.latest;
+			if (update && update.npmVersion !== publicPackage.installedVersion) {
+				publicPackage.updateAvailable = update.npmVersion;
+			}
 
 			acc.push(publicPackage);
 
@@ -455,7 +458,10 @@ export class CommunityPackagesService {
 	async handleInstallEvent({
 		packageName,
 		packageVersion,
-	}: { packageName: string; packageVersion: string }) {
+	}: {
+		packageName: string;
+		packageVersion: string;
+	}) {
 		await this.installOrUpdateNpmPackage(packageName, packageVersion);
 	}
 

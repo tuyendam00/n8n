@@ -1,3 +1,4 @@
+import type { CommunityNodeType } from '@n8n/api-types';
 import { Delete, Get, Patch, Post, RestController, GlobalScope } from '@n8n/decorators';
 
 import {
@@ -161,23 +162,31 @@ export class CommunityPackagesController {
 
 		if (installedPackages.length === 0) return [];
 
-		let pendingUpdates: CommunityPackages.AvailableUpdates | undefined;
+		let installedCommunityNodes: Record<string, CommunityNodeType> | undefined;
 
 		try {
-			const command = ['npm', 'outdated', '--json'].join(' ');
-			await this.communityPackagesService.executeNpmCommand(command, { doNotHandleError: true });
+			const communityNodes = await this.communityNodeTypesService.getCommunityNodeTypes();
+
+			installedCommunityNodes = communityNodes.reduce(
+				(acc, node) => {
+					if (node.isInstalled) {
+						acc[node.packageName] = node;
+					}
+					return acc;
+				},
+				{} as Record<string, CommunityNodeType>,
+			);
 		} catch (error) {
-			// when there are updates, npm exits with code 1
-			// when there are no updates, command succeeds
-			// https://github.com/npm/rfcs/issues/473
-			if (isNpmError(error) && error.code === 1) {
-				pendingUpdates = JSON.parse(error.stdout) as CommunityPackages.AvailableUpdates;
-			}
+			const message = [
+				'Error fetching community nodes',
+				error instanceof Error ? error.message : UNKNOWN_FAILURE_REASON,
+			].join(':');
+			throw new InternalServerError(message, error);
 		}
 
 		let hydratedPackages = this.communityPackagesService.matchPackagesWithUpdates(
 			installedPackages,
-			pendingUpdates,
+			installedCommunityNodes,
 		);
 
 		try {

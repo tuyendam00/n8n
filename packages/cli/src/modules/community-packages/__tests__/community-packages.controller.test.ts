@@ -120,4 +120,40 @@ describe('CommunityPackagesController', () => {
 			expect(result).toBe(newInstalledPackage);
 		});
 	});
+
+	describe('getInstalledPackages', () => {
+		it('should fetch community nodes', async () => {
+			const installedPackage = {
+				installedNodes: [],
+				installedVersion: '2.0.0',
+				authorName: 'Author',
+				authorEmail: 'author@example.com',
+				packageName: 'testPackage',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				setUpdateDate: () => {},
+			};
+			communityPackagesService.getAllInstalledPackages.mockResolvedValue([installedPackage]);
+			const communityNodeType: Partial<CommunityNodeType> = {
+				packageName: 'testPackage',
+				isInstalled: true,
+			};
+			const notInstalledNodeType: Partial<CommunityNodeType> = {
+				packageName: 'testPackage1',
+				isInstalled: false,
+			};
+			communityNodeTypesService.getCommunityNodeTypes.mockResolvedValue([
+				communityNodeType,
+				notInstalledNodeType,
+			] as CommunityNodeType[]);
+
+			await controller.getInstalledPackages();
+
+			expect(communityNodeTypesService.getCommunityNodeTypes).toHaveBeenCalled();
+			expect(communityPackagesService.matchPackagesWithUpdates).toHaveBeenCalledWith(
+				[installedPackage],
+				{ [communityNodeType.packageName!]: communityNodeType },
+			);
+		});
+	});
 });
