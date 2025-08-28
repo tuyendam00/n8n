@@ -1,7 +1,7 @@
 import type {
 	IDataObject,
 	INode,
-	ListDataStoreContentFilter,
+	DataStoreFilter,
 	IDataStoreProjectAggregateService,
 	IDataStoreProjectService,
 	IExecuteFunctions,
@@ -72,7 +72,7 @@ export function isMatchType(obj: unknown): obj is FilterType {
 export function buildGetManyFilter(
 	fieldEntries: FieldEntry[],
 	matchType: FilterType,
-): ListDataStoreContentFilter {
+): DataStoreFilter {
 	const filters = fieldEntries.map((x) => ({
 		columnName: x.keyName,
 		condition: x.condition,

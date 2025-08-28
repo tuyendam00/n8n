@@ -1580,7 +1580,7 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { name: 'Alicia', age: 31, active: false, birthday: new Date('1990-01-02') },
 			});
 
@@ -1634,7 +1634,7 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { id: 1 },
+				filter: { type: 'and', filters: [{ columnName: 'id', condition: 'eq', value: 1 }] },
 				data: { name: 'Alicia', age: 31, active: false },
 			});
 
@@ -1686,7 +1686,7 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { age: 31, active: false },
 			});
 
@@ -1729,7 +1729,7 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { name: 'Alicia' },
 			});
 
@@ -1776,7 +1776,7 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { age: 30 },
+				filter: { type: 'and', filters: [{ columnName: 'age', condition: 'eq', value: 30 }] },
 				data: { age: 31 },
 			});
 
@@ -1823,7 +1823,7 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { active: true },
+				filter: { type: 'and', filters: [{ columnName: 'active', condition: 'eq', value: true }] },
 				data: { active: false },
 			});
 
@@ -1870,7 +1870,10 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { birthday: new Date('1990-01-01') },
+				filter: {
+					type: 'and',
+					filters: [{ columnName: 'birthday', condition: 'eq', value: new Date('1990-01-01') }],
+				},
 				data: { birthday: new Date('1990-01-02') },
 			});
 
@@ -1917,7 +1920,13 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice', age: 30 },
+				filter: {
+					type: 'and',
+					filters: [
+						{ columnName: 'name', condition: 'eq', value: 'Alice' },
+						{ columnName: 'age', condition: 'eq', value: 30 },
+					],
+				},
 				data: { department: 'Management' },
 			});
 
@@ -1963,7 +1972,10 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Charlie' },
+				filter: {
+					type: 'and',
+					filters: [{ columnName: 'name', condition: 'eq', value: 'Charlie' }],
+				},
 				data: { age: 25 },
 			});
 
@@ -1993,13 +2005,13 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: {},
+				filter: { type: 'and', filters: [] },
 				data: { name: 'Alice', age: 31 },
 			});
 
 			// ASSERT
 			await expect(result).rejects.toThrow(
-				new DataStoreValidationError('Filter columns must not be empty for updateRow'),
+				new DataStoreValidationError('Filter must not be empty for updateRow'),
 			);
 
 			const { data } = await dataStoreService.getManyRowsAndCount(dataStoreId, project1.id, {});
@@ -2025,7 +2037,7 @@ describe('dataStore', () => {
 
 			// ACT
 			const result = dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: {},
 			});
 
@@ -2046,7 +2058,7 @@ describe('dataStore', () => {
 		it('should fail when data store does not exist', async () => {
 			// ACT & ASSERT
 			const result = dataStoreService.updateRow('non-existent-id', project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { age: 25 },
 			});
 
@@ -2064,7 +2076,7 @@ describe('dataStore', () => {
 
 			// ACT & ASSERT
 			const result = dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { invalidColumn: 'value' },
 			});
 
@@ -2082,7 +2094,10 @@ describe('dataStore', () => {
 
 			// ACT & ASSERT
 			const result = dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { invalidColumn: 'Alice' },
+				filter: {
+					type: 'and',
+					filters: [{ columnName: 'invalidColumn', condition: 'eq', value: 'Alice' }],
+				},
 				data: { name: 'Bob' },
 			});
 
@@ -2103,7 +2118,7 @@ describe('dataStore', () => {
 
 			// ACT & ASSERT
 			const result = dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { age: 'not-a-number' },
 			});
 
@@ -2127,7 +2142,7 @@ describe('dataStore', () => {
 
 			// ACT - only update age, leaving name and active unchanged
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { age: 31 },
 			});
 
@@ -2162,7 +2177,7 @@ describe('dataStore', () => {
 			// ACT
 			const newDate = new Date('1991-02-02');
 			const result = await dataStoreService.updateRow(dataStoreId, project1.id, {
-				filter: { name: 'Alice' },
+				filter: { type: 'and', filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }] },
 				data: { birthDate: newDate.toISOString() },
 			});
 
@@ -2200,7 +2215,10 @@ describe('dataStore', () => {
 				dataStoreId,
 				project1.id,
 				{
-					filter: { name: 'Alice' },
+					filter: {
+						type: 'and',
+						filters: [{ columnName: 'name', condition: 'eq', value: 'Alice' }],
+					},
 					data: { age: 31, active: false, timestamp: soon },
 				},
 				true,
