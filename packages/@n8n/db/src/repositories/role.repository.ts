@@ -1,9 +1,8 @@
+import { DatabaseConfig } from '@n8n/config';
 import { Service } from '@n8n/di';
 import { DataSource, EntityManager, Repository } from '@n8n/typeorm';
 
 import { Role } from '../entities';
-import { DatabaseConfig } from '@n8n/config';
-import { FileNotFoundError } from 'n8n-core';
 
 @Service()
 export class RoleRepository extends Repository<Role> {
